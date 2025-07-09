@@ -2,7 +2,8 @@
 
 Redesign by Fjella at ensure 
 
-## If you like my work please support at https://ko-fi.com/fjellaa
+## If you like my work please support at KO-FI or star my the repo on GitHub
+https://ko-fi.com/fjellaa
 
 ## If you want to make changes to the design this is how you would go about doing that.
 
