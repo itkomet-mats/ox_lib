@@ -1,6 +1,6 @@
 # ox_lib - Redesign
 
-## Redesign by Fjella at ensure 
+Redesign by Fjella at ensure 
 
 ## If you like my work please support at https://ko-fi.com/fjellaa
 
