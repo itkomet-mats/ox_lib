@@ -139,10 +139,8 @@ function SetInterval(callback, interval, ...)
         repeat
             interval = intervals[id]
             Wait(interval)
-
-            if interval < 0 then break end
             callback(table.unpack(args))
-        until false
+        until interval < 0
         intervals[id] = nil
     end)
 

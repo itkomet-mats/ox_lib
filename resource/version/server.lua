@@ -43,4 +43,4 @@ function lib.versionCheck(repository)
 	end)
 end
 
-lib.versionCheck('communityox/ox_lib')
+lib.versionCheck('overextended/ox_lib')
