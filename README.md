@@ -4,6 +4,20 @@
 
 ## If you like my work please support at https://ko-fi.com/fjellaa
 
+## If you want to make changes to the design this is how you would go about doing that.
+
+1. Install node.js: https://nodejs.org/en
+2. Open terminal (cmd) 
+3. cd into folder for example command: cd C:\Users\fjella\Documents\GitHub\ox_lib\__PRE-BUILD WEB\web
+4. run command pnpm i, this is too install node modules
+5. run pnpm run dev, that  gives you a localhost IP you can open in browser to make changes to design
+6. most design elements are found here: src/features, in those folders there are alot of files attached to different elements etc in ox_lib. Make changes inside styles {{  }}
+7. when you are done editing go back to your terminal(cmd) and write pnpm run build
+8. drag that build folder into your servers ox_lib/web folder and replace everything
+9. enjoy!
+
+PS: i will not be providing support on this for obvious reasons.
+
 ![](https://ik.imagekit.io/itkomet/Ensure/ox_lib/input_dialog2.PNG?updatedAt=1752063639231)
 ![](https://ik.imagekit.io/itkomet/Ensure/ox_lib/context_menu.PNG?updatedAt=1752063639310)
 ![](https://ik.imagekit.io/itkomet/Ensure/ox_lib/radial.PNG?updatedAt=1752063639326)
@@ -14,6 +28,8 @@
 ![](https://ik.imagekit.io/itkomet/Ensure/ox_lib/skillcheck.PNG?updatedAt=1752063639092)
 ![](https://ik.imagekit.io/itkomet/Ensure/ox_lib/textui.PNG?updatedAt=1752063639073)
 ![](https://ik.imagekit.io/itkomet/Ensure/ox_lib/notif.PNG?updatedAt=1752063638930)
+
+
 
 
 A FiveM library and resource implementing reusable modules, methods, and UI elements.
