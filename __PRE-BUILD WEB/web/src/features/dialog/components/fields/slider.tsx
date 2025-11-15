@@ -37,14 +37,14 @@ const SliderField: React.FC<Props> = (props) => {
     ]}
     styles={{
       thumb: {
-        border: '1px solid yellow',
-        backgroundColor: 'rgb(224, 255, 141)',
+        border: '1px solid #2a2a2a',
+        backgroundColor: '#5df542',
       },
       track: {
-        backgroundColor: 'rgba(255, 255, 255, 0.3)',
+        backgroundColor: '#072e00ff',
       },
       bar: {
-        backgroundColor: 'rgb(224, 255, 141, 0.5)',
+        backgroundColor: '#5df542',
       },
       markLabel: {
         color: 'white',

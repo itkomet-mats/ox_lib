@@ -13,7 +13,7 @@ export const debugCustomNotification = () => {
         duration: 20000,
         style: {
           '.description': {
-            color: 'red',
+            color: 'white',
           },
         },
       },

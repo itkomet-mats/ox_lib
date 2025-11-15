@@ -333,15 +333,15 @@ code {
 }
 
 .toast-inform {
-  background-color: #2980b9;
+  background-color: rgb(66, 99, 245)ff;
 }
 
 .toast-success {
-  background-color: #27ae60;
+  background-color: #072e00ff;
 }
 
 .toast-error {
-  background-color: #c0392b;
+  background-color: rgb(46, 0, 0);
 }
 
 

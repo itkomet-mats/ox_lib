@@ -37,13 +37,8 @@ const NumberField: React.FC<Props> = (props) => {
       withAsterisk={props.row.required}
       styles={{
         input: {
-          background: 'rgba(255, 255, 255, 0.3)',
-          backgroundImage: 'url(/src/blur.png)',
-          backgroundRepeat: 'repeat',
-          backgroundSize: 'auto',
-          backgroundPosition: 'center',
-          backgroundBlendMode: 'overlay',
-          border: '1px solid rgba(255, 255, 255, 0.3)',
+              background: '#5df54250',
+    border: '1px solid #5df542',
           borderRadius: '8px',
           color: '#ffffff',
           fontWeight: 500,

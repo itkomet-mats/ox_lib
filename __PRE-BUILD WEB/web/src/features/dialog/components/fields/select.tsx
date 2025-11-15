@@ -36,18 +36,13 @@ const SelectField: React.FC<Props> = (props) => {
           icon={props.row.icon && <LibIcon icon={props.row.icon} fixedWidth />}
            styles={{
     input: {
-    background: 'rgba(255, 255, 255, 0.3)',
-    backgroundImage: 'url(/src/blur.png)',
-    backgroundRepeat: 'repeat',
-    backgroundSize: 'auto',
-    backgroundPosition: 'center',
-    backgroundBlendMode: 'overlay',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
+    background: '#5df54250',
+    border: '1px solid #5df542',
     borderRadius: '8px',
     color: 'white',
     fontWeight: 500,
       '::placeholder': {
-        color: 'rgba(255, 255, 255, 0.72)',
+        color: '#ffffff80',
       },
     },
     label: {
@@ -61,13 +56,8 @@ const SelectField: React.FC<Props> = (props) => {
       marginBottom: 8,
     },
     dropdown: {
-      background: 'rgba(255, 255, 255, 0.3)',
-      backgroundImage: 'url(/src/blur.png)',
-      backgroundRepeat: 'repeat',
-      backgroundSize: 'auto',
-      backgroundPosition: 'center',
-      backgroundBlendMode: 'overlay',
-      border: '1px solid rgba(255, 255, 255, 0.3)',
+         background: '#072e00ff',
+    border: '1px solid #5df542',
       borderRadius: '8px',
     },
   }}

@@ -1,102 +1,156 @@
 import React from 'react';
-import {createStyles, keyframes, RingProgress, Stack, Text, useMantineTheme} from '@mantine/core';
-import {useNuiEvent} from '../../hooks/useNuiEvent';
-import {fetchNui} from '../../utils/fetchNui';
+import { Box, createStyles, Text } from '@mantine/core';
+import { useNuiEvent } from '../../hooks/useNuiEvent';
+import { fetchNui } from '../../utils/fetchNui';
 import ScaleFade from '../../transitions/ScaleFade';
-import type {CircleProgressbarProps} from '../../typings';
+import type { CircleProgressbarProps } from '../../typings';
 
-// 33.5 is the r of the circle
-const progressCircle = keyframes({
-  '0%': { strokeDasharray: `0, ${33.5 * 2 * Math.PI}` },
-  '100%': { strokeDasharray: `${33.5 * 2 * Math.PI}, 0` },
-});
-
-const useStyles = createStyles((theme, params: { position: 'middle' | 'bottom'; duration: number }) => ({
+const useStyles = createStyles(() => ({
+  wrapper: {
+    position: 'fixed',
+    left: 0,
+    right: 0,
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    bottom: '5%',
+    width: '19%',
+    zIndex: 5,
+    fontFamily: '"Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif',
+    fontSize: '1.7vh',
+    pointerEvents: 'none',
+  },
   container: {
-    width: '100%',
-    height: params.position === 'middle' ? '100%' : '20%',
-    bottom: 0,
-    position: 'absolute',
+    color: '#fff',
     display: 'flex',
-    justifyContent: 'center',
+    flexDirection: 'column',
+    gap: '0.6vh',
+    userSelect: 'none',
+  },
+  labelsRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  progress: {
-    '> svg > circle:nth-child(1)': {
-      stroke: 'rgba(255, 255, 255, 0.15)',
-    },
-    // Scuffed way of grabbing the first section and animating it
-    '> svg > circle:nth-child(2)': {
-      transition: 'none',
-      animation: `${progressCircle} linear forwards`,
-      animationDuration: `${params.duration}ms`,
-    },
-  },
-  value: {
-    textAlign: 'center',
-    fontFamily: 'Roboto Mono',
-    textShadow: theme.shadows.sm,
-    color: '#ffffff',
-  },
   label: {
-    textAlign: 'center',
-    color: '#ffffff',
-    height: 25,
+    fontSize: '1.7vh',
+    lineHeight: '4vh',
+    color: '#5df542',
+    fontWeight: 900,
+    textShadow: '0 1px 2px rgba(0, 0, 0, 0.85), 0 0 8px rgba(0, 0, 0, 0.45)',
   },
-  wrapper: {
-    marginTop: params.position === 'middle' ? 25 : undefined,
+  pct: {
+    fontSize: '1.7vh',
+    lineHeight: '4vh',
+    color: '#5df542',
+    fontWeight: 700,
+    // neon + dark outline for contrast
+    textShadow:
+      '0 0 12px rgba(0, 0, 0, 0.56), 0 0 4px rgba(0, 0, 0, 0.64), 0 1px 2px rgba(0, 0, 0, 0.72)',
+  },
+  progressBarContainer: {
+      background: `
+  #072e00ff
+`,
+    backgroundBlendMode: 'overlay',
+    height: '0.9vh',
+    position: 'relative',
+    display: 'block',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  progressBar: {
+    backgroundColor: '#5df542',
+    width: '0%',
+    height: '0.9vh',
+    borderRadius: 4,
+    transition: 'width 0.3s',
+    transitionTimingFunction: 'ease-out',
+    // stronger green glow to match the % text
+    boxShadow:
+      '0 0 22px rgba(11, 239, 11, 0.95), 0 0 12px rgba(30, 239, 11, 0.85), 0 0 30px rgba(109, 255, 73, 0.85)',
+    filter: 'drop-shadow(0 0 10px rgba(143, 255, 91, 0.82))',
   },
 }));
 
+
+
 const CircleProgressbar: React.FC = () => {
+  const { classes } = useStyles();
+
   const [visible, setVisible] = React.useState(false);
-  const [progressDuration, setProgressDuration] = React.useState(0);
-  const [position, setPosition] = React.useState<'middle' | 'bottom'>('middle');
-  const [value, setValue] = React.useState(0);
   const [label, setLabel] = React.useState('');
-  const theme = useMantineTheme();
-  const { classes } = useStyles({ position, duration: progressDuration });
+  const [percent, setPercent] = React.useState(0);
+  const [wasCancelled, setWasCancelled] = React.useState(false);
+
+  const rafRef = React.useRef<number | null>(null);
+  const startRef = React.useRef<number>(0);
+  const durationRef = React.useRef<number>(0);
+
+  const stopAnim = React.useCallback(() => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+  }, []);
+
+  const finish = React.useCallback(() => {
+    stopAnim();
+    setVisible(false); // triggers onExitComplete (success)
+  }, [stopAnim]);
 
   useNuiEvent('progressCancel', () => {
-    setValue(99);
-    setVisible(false);
+    setWasCancelled(true);
+    stopAnim();
+    setPercent(0);
+    setVisible(false); // do NOT call progressComplete on cancel
   });
 
   useNuiEvent<CircleProgressbarProps>('circleProgress', (data) => {
-    if (visible) return;
-    setVisible(true);
-    setValue(0);
+    // Always place at the same bottom location as the regular bar
+    setWasCancelled(false);
     setLabel(data.label || '');
-    setProgressDuration(data.duration);
-    setPosition(data.position || 'middle');
-    const onePercent = data.duration * 0.01;
-    const updateProgress = setInterval(() => {
-      setValue((previousValue) => {
-        const newValue = previousValue + 1;
-        newValue >= 100 && clearInterval(updateProgress);
-        return newValue;
-      });
-    }, onePercent);
+    durationRef.current = data.duration || 0;
+    setPercent(0);
+    setVisible(true);
+
+    stopAnim();
+    startRef.current = performance.now();
+
+    const tick = (now: number) => {
+      const elapsed = now - startRef.current;
+      const total = Math.max(0, durationRef.current);
+      const p = total > 0 ? Math.min(1, elapsed / total) : 1;
+      setPercent(Math.round(p * 100));
+      if (p < 1) {
+        rafRef.current = requestAnimationFrame(tick);
+      } else {
+        finish();
+      }
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
   });
 
+  const handleExitComplete = React.useCallback(() => {
+    if (!wasCancelled) fetchNui('progressComplete');
+  }, [wasCancelled]);
+
+  React.useEffect(() => () => stopAnim(), [stopAnim]);
+
   return (
-    <>
-      <Stack spacing={0} className={classes.container}>
-        <ScaleFade visible={visible} onExitComplete={() => fetchNui('progressComplete')}>
-          <Stack spacing={0} align="center" className={classes.wrapper}>
-            <RingProgress
-              size={90}
-              thickness={7}
-              sections={[{ value: 0, color: 'rgb(224, 255, 141)' }]}
-              onAnimationEnd={() => setVisible(false)}
-              className={classes.progress}
-              label={<Text className={classes.value}>{value}%</Text>}
-            />
-            {label && <Text className={classes.label}>{label}</Text>}
-          </Stack>
-        </ScaleFade>
-      </Stack>
-    </>
+    <Box className={classes.wrapper}>
+      <ScaleFade visible={visible} onExitComplete={handleExitComplete}>
+        <Box className={classes.container}>
+          <Box className={classes.labelsRow}>
+            <Text className={classes.label}>{label || 'Working...'}</Text>
+            <Text className={classes.pct}>{percent}%</Text>
+          </Box>
+          <Box className={classes.progressBarContainer}>
+            <Box className={classes.progressBar} sx={{ width: `${percent}%` }} />
+          </Box>
+        </Box>
+      </ScaleFade>
+    </Box>
   );
 };
 

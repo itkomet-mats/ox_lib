@@ -23,14 +23,9 @@ const TimeField: React.FC<Props> = (props) => {
       name={controller.field.name}
       styles={{
     input: {
-       background: 'rgba(255, 255, 255, 0.3)',
-      border: '1px solid rgba(255, 255, 255, 0.3)',
-      backgroundImage: 'url(/src/blur.png)',
-      backgroundRepeat: 'repeat',
-      backgroundSize: 'auto',
-      backgroundPosition: 'center',
-      backgroundBlendMode: 'overlay',
-      color: 'white',
+           background: '#5df54250',
+    border: '1px solid #5df542',
+      color: '#ffffff',
     },
     
     label: {

@@ -8,61 +8,115 @@ import type { NotificationProps } from '../../typings';
 import MarkdownComponents from '../../config/MarkdownComponents';
 import LibIcon from '../../components/LibIcon';
 
-const useStyles = createStyles((theme) => ({
+// colors
+const BRAND = {
+  primary: '#5df542',
+  error: '#ff5a5aff',
+  info: '#5df542',
+} as const;
+
+// semi-transparent background variants
+const BACKGROUNDS: Record<string, string> = {
+  error: '#420000ff',
+  success: '#072e00ff',
+  info: '#072e00ff',
+  default: '#072e00ff', // fallback
+};
+
+const CORNER = { size: 18, thickness: 2 } as const;
+
+const useStyles = createStyles(() => ({
   container: {
-    width: 300,
+    width: 400,
     height: 'fit-content',
-    background: 'rgba(0, 0, 0, 0.2)',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    borderRadius: '8px',
-    backgroundImage: 'url(/src/blur.png)',
-    backgroundRepeat: 'repeat',
-    backgroundSize: 'auto',
-    backgroundPosition: 'center',
-    backgroundBlendMode: 'overlay',
+    borderRadius: 0,
     color: 'white',
     padding: 12,
     fontFamily: 'Roboto',
     boxShadow: '0 10px 50px rgba(0, 0, 0, 0.3)',
+    position: 'relative',
+    overflow: 'hidden',
   },
+
+
+  // text
   title: {
     fontWeight: 500,
+    fontSize: 18,
     lineHeight: 'normal',
+       transform: 'perspective(1000px) rotateY(-4deg)',
   },
   description: {
-    fontSize: 12,
+    fontSize: 16,
     color: 'white',
     fontFamily: 'Roboto',
     lineHeight: 'normal',
+       transform: 'perspective(1000px) rotateY(-4deg)',
   },
   descriptionOnly: {
-    fontSize: 14,
+    fontSize: 16,
     color: 'white',
     fontFamily: 'Roboto',
     lineHeight: 'normal',
+       transform: 'perspective(1000px) rotateY(-4deg)',
+  },
+
+  // corner pieces
+  corner: {
+    position: 'absolute',
+    width: CORNER.size,
+    height: CORNER.size,
+    pointerEvents: 'none',
+  },
+  topLeft: {
+    top: 0,
+    left: 0,
+    borderTop: `${CORNER.thickness}px solid`,
+    borderLeft: `${CORNER.thickness}px solid`,
+  },
+  topRight: {
+    top: 0,
+    right: 0,
+    borderTop: `${CORNER.thickness}px solid`,
+    borderRight: `${CORNER.thickness}px solid`,
+  },
+  bottomLeft: {
+    bottom: 0,
+    left: 0,
+    borderBottom: `${CORNER.thickness}px solid`,
+    borderLeft: `${CORNER.thickness}px solid`,
+  },
+  bottomRight: {
+    bottom: 0,
+    right: 0,
+    borderBottom: `${CORNER.thickness}px solid`,
+    borderRight: `${CORNER.thickness}px solid`,
   },
 }));
 
-const createAnimation = (from: string, to: string, visible: boolean) => keyframes({
-  from: {
-    opacity: visible ? 0 : 1,
-    transform: `translate${from}`,
-  },
-  to: {
-    opacity: visible ? 1 : 0,
-    transform: `translate${to}`,
-  },
-});
+const createAnimation = (from: string, to: string, visible: boolean) =>
+  keyframes({
+    from: {
+      opacity: visible ? 0 : 1,
+      transform: `translate${from}`,
+    },
+    to: {
+      opacity: visible ? 1 : 0,
+      transform: `translate${to}`,
+    },
+  });
 
 const getAnimation = (visible: boolean, position: string) => {
-  const animationOptions = visible ? '0.2s ease-out forwards' : '0.4s ease-in forwards'
+  const animationOptions = visible ? '0.2s ease-out forwards' : '0.4s ease-in forwards';
   let animation: { from: string; to: string };
 
   if (visible) {
-    animation = position.includes('bottom') ? { from: 'Y(30px)', to: 'Y(0px)' } : { from: 'Y(-30px)', to:'Y(0px)' };
+    animation = position.includes('bottom')
+      ? { from: 'Y(30px)', to: 'Y(0px)' }
+      : { from: 'Y(-30px)', to: 'Y(0px)' };
   } else {
     if (position.includes('right')) {
-      animation = { from: 'X(0px)', to: 'X(100%)' }
+      animation = { from: 'X(0px)', to: 'X(100%)' };
     } else if (position.includes('left')) {
       animation = { from: 'X(0px)', to: 'X(-100%)' };
     } else if (position === 'top-center') {
@@ -74,7 +128,7 @@ const getAnimation = (visible: boolean, position: string) => {
     }
   }
 
-  return `${createAnimation(animation.from, animation.to, visible)} ${animationOptions}`
+  return `${createAnimation(animation.from, animation.to, visible)} ${animationOptions}`;
 };
 
 const durationCircle = keyframes({
@@ -83,7 +137,7 @@ const durationCircle = keyframes({
 });
 
 const Notifications: React.FC = () => {
-  const { classes } = useStyles();
+  const { classes, cx } = useStyles();
   const [toastKey, setToastKey] = useState(0);
 
   useNuiEvent<NotificationProps>('notify', (data) => {
@@ -97,9 +151,9 @@ const Notifications: React.FC = () => {
 
     data.showDuration = data.showDuration !== undefined ? data.showDuration : true;
 
-    if (toastId) setToastKey(prevKey => prevKey + 1);
+    if (toastId) setToastKey((prevKey) => prevKey + 1);
 
-    // Backwards compat with old notifications
+    // Backwards compat
     switch (position) {
       case 'top':
         position = 'top-center';
@@ -129,31 +183,47 @@ const Notifications: React.FC = () => {
     if (!data.iconColor) {
       switch (data.type) {
         case 'error':
-          iconColor = 'rgb(255, 133, 133)';
+          iconColor = 'rgba(255, 255, 255, 1)';
           break;
         case 'success':
-          iconColor = 'rgb(161, 255, 152)';
+          iconColor = 'rgba(255, 255, 255, 1)';
           break;
         case 'warning':
-          iconColor = 'rgb(239, 255, 95)';
+          iconColor = 'rgba(255, 255, 255, 1)';
           break;
         default:
-          iconColor = 'yellow.6';
+          iconColor = 'white.6';
           break;
       }
     } else {
       iconColor = tinycolor(data.iconColor).toRgbString();
     }
-    
+
+    // backgrounds + corner color
+    const bgColor = BACKGROUNDS[data.type ?? 'default'] || BACKGROUNDS.default;
+    const cornerColor =
+      data.type === 'error'
+        ? BRAND.error
+        : data.type === 'success'
+        ? BRAND.primary
+        : BRAND.info;
+
     toast.custom(
       (t) => (
         <Box
           sx={{
             animation: getAnimation(t.visible, position),
+            background: bgColor,
             ...data.style,
           }}
-          className={`${classes.container}`}
+          className={classes.container}
         >
+          {/* corner-only borders */}
+          <span className={cx(classes.corner, classes.topLeft)} style={{ borderColor: cornerColor }} />
+          <span className={cx(classes.corner, classes.topRight)} style={{ borderColor: cornerColor }} />
+          <span className={cx(classes.corner, classes.bottomLeft)} style={{ borderColor: cornerColor }} />
+          <span className={cx(classes.corner, classes.bottomRight)} style={{ borderColor: cornerColor }} />
+
           <Group noWrap spacing={12}>
             {data.icon && (
               <>
@@ -163,7 +233,10 @@ const Notifications: React.FC = () => {
                     size={38}
                     thickness={2}
                     sections={[{ value: 100, color: iconColor }]}
-                    style={{ alignSelf: !data.alignIcon || data.alignIcon === 'center' ? 'center' : 'start' }}
+                    style={{
+                      alignSelf:
+                        !data.alignIcon || data.alignIcon === 'center' ? 'center' : 'start',
+                    }}
                     styles={{
                       root: {
                         '> svg > circle:nth-of-type(2)': {
@@ -179,9 +252,16 @@ const Notifications: React.FC = () => {
                           color={iconColor}
                           radius="xl"
                           size={32}
-                          variant={tinycolor(iconColor).getAlpha() < 0 ? undefined : 'light'}
+                          variant={
+                            tinycolor(iconColor).getAlpha() < 0 ? undefined : 'light'
+                          }
                         >
-                          <LibIcon icon={data.icon} fixedWidth color={iconColor} animation={data.iconAnimation} />
+                          <LibIcon
+                            icon={data.icon}
+                            fixedWidth
+                            color={iconColor}
+                            animation={data.iconAnimation}
+                          />
                         </ThemeIcon>
                       </Center>
                     }
@@ -192,9 +272,17 @@ const Notifications: React.FC = () => {
                     radius="xl"
                     size={32}
                     variant={tinycolor(iconColor).getAlpha() < 0 ? undefined : 'light'}
-                    style={{ alignSelf: !data.alignIcon || data.alignIcon === 'center' ? 'center' : 'start' }}
+                    style={{
+                      alignSelf:
+                        !data.alignIcon || data.alignIcon === 'center' ? 'center' : 'start',
+                    }}
                   >
-                    <LibIcon icon={data.icon} fixedWidth color={iconColor} animation={data.iconAnimation} />
+                    <LibIcon
+                      icon={data.icon}
+                      fixedWidth
+                      color={iconColor}
+                      animation={data.iconAnimation}
+                    />
                   </ThemeIcon>
                 )}
               </>
@@ -204,7 +292,9 @@ const Notifications: React.FC = () => {
               {data.description && (
                 <ReactMarkdown
                   components={MarkdownComponents}
-                  className={`${!data.title ? classes.descriptionOnly : classes.description} description`}
+                  className={`${
+                    !data.title ? classes.descriptionOnly : classes.description
+                  } description`}
                 >
                   {data.description}
                 </ReactMarkdown>
@@ -215,8 +305,8 @@ const Notifications: React.FC = () => {
       ),
       {
         id: toastId,
-        duration: duration,
-        position: position,
+        duration,
+        position,
       }
     );
   });

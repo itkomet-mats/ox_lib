@@ -9,49 +9,117 @@ import type { RadialMenuItem } from '../../../typings';
 import { useLocales } from '../../../providers/LocaleProvider';
 import LibIcon from '../../../components/LibIcon';
 
-const useStyles = createStyles((theme) => ({
-  wrapper: {
+const useStyles = createStyles((_theme) => {
+  const YELLOW = '#5df542';
+
+  return {
+    wrapper: {
     position: 'absolute',
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
+    fontFamily: '"Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif',
   },
+
+
+     /** Group-level styling & hovers for each blade */
   sector: {
-    fill: 'transparent',
-    color: 'white',
+    color: '#fff',
+    transition: 'filter .12s ease-out',
 
     '&:hover': {
-      fill: '#2a2a2a',
       cursor: 'pointer',
+      filter: 'drop-shadow(0 0 10px #072e00ff)',
+
+      // brighten base on hover
+      '.sectorBase': {
+        // keep base dark but slightly warmed on hover
+        fill: '#093f00ff',
+        stroke: '#5df542',
+      },
+      // keep overlay visible
+      '.sectorOverlay': {
+        opacity: 0.55,
+      },
+
       '> g > text, > g > svg > path': {
-        fill: 'white',
+        fill: '#ffffff',
       },
     },
+
+       // active/persist highlight (if you set data-active on the group)
+    '&[data-active="true"] .sectorBase': {
+      fill: '#072e00ff',
+      stroke: '#5df542',
+      filter: 'drop-shadow(0 0 14px #5df542)',
+    },
+    '&[data-active="true"] .sectorOverlay': {
+      opacity: 0.6,
+    },
+    '&[data-active="true"] > g > text': {
+      fill: '#ffffff',
+      textShadow:
+        '0 0 12px #5df542, 0 0 4px #5df542, 0 1px 2px rgba(0,0,0,.85)',
+    },
+    '&[data-active="true"] > g > svg > path': {
+      fill: '#5df542',
+      filter: 'drop-shadow(0 0 6px #5df542)',
+    },
+
+       // labels
     '> g > text': {
-      fill: '#',
+      fill: '#ffffff',
       strokeWidth: 0,
-      fontWeight: 400,
+      fontWeight: 700,
+      fontFamily: '"Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif',
+      textShadow: '0 1px 2px rgba(0,0,0,.85), 0 0 8px rgba(0,0,0,.45)',
+    },
+    // icons (if any SVG path)
+    '> g > svg > path': {
+      fill: '#E6E8EB',
     },
   },
-  backgroundCircle: {
-    fill: 'rgba(255, 255, 255, 0.205)',
-    
-    strokeWidth: 2,
-    stroke: 'rgba(255, 255, 255, 0.3)',
-    
-    
-  },
-  centerCircle: {
-    fill: 'rgba(255, 255, 255, 0.15)',
-    color: '#2a2a2a',
-    stroke: 'rgba(255, 255, 255, 0.3)',
+
+    /** Base shape of a blade: solid dark for readability */
+  sectorBase: {
+    // solid base = your "linear-gradient(#2a2a2a, #2a2a2a)"
+    fill: '#072e00ff',
+    // keep a subtle border; slightly warmer like your container example
+    stroke: '#5df542',
     strokeWidth: 1,
+    transition: 'fill .12s ease-out, stroke .12s ease-out',
+  },
+
+   /** Stripes overlay (subtle), sits on top of base */
+  sectorOverlay: {
+    // this is the "repeating-linear-gradient(...)" equivalent
+    fill: 'url(#radialStripes)',
+    opacity: 0.5,
+    pointerEvents: 'none',
+  },
+
+   /** Center hub button */
+  centerCircle: {
+    // solid dark base for center
+    fill: '#072e00ff',
+    color: '#2a2a2a',
+    stroke: 'rgba(255, 251, 251, 0.28)',
+    strokeWidth: 1,
+    transition: 'fill .12s ease-out, filter .12s ease-out',
     '&:hover': {
       cursor: 'pointer',
-      fill: 'rgba(206, 255, 72, 0.75)',
+      fill: '#072e00ff',
+      filter: 'drop-shadow(0 0 12px #5df542)',
+    },
+    '&[data-active="true"]': {
+      fill: '#5df542',
+      filter: 'drop-shadow(0 0 12px #5df542)',
     },
   },
-  centerIconContainer: {
+
+
+
+    centerIconContainer: {
     position: 'absolute',
     top: '50%',
     left: '50%',
@@ -59,9 +127,13 @@ const useStyles = createStyles((theme) => ({
     pointerEvents: 'none',
   },
   centerIcon: {
-    color: 'yellow',
+    // default brand yellow; we override via prop when hovering X
+    color: YELLOW,
+    filter: 'drop-shadow(0 0 8px #5df542)',
   },
-}));
+
+  };
+});
 
 const calculateFontSize = (text: string): number => {
   if (text.length > 20) return 10;
@@ -87,14 +159,44 @@ const splitTextIntoLines = (text: string, maxCharPerLine: number = 15): string[]
 };
 
 const PAGE_ITEMS = 6;
-
 const degToRad = (deg: number) => deg * (Math.PI / 180);
+
+// ring wedge path (donut blade)
+const donutSectorPath = (
+  cx: number, cy: number,
+  innerR: number, outerR: number,
+  sweepDeg: number
+) => {
+  const ang = degToRad(sweepDeg);
+  const large = sweepDeg > 180 ? 1 : 0;
+
+  const sxOuter = cx + outerR;
+  const syOuter = cy;
+  const exOuter = cx + outerR * Math.cos(-ang);
+  const eyOuter = cy + outerR * Math.sin(-ang);
+
+  const exInner = cx + innerR * Math.cos(-ang);
+  const eyInner = cy + innerR * Math.sin(-ang);
+  const sxInner = cx + innerR;
+  const syInner = cy;
+
+  return [
+    `M ${sxInner} ${syInner}`,
+    `L ${sxOuter} ${syOuter}`,
+    `A ${outerR} ${outerR} 0 ${large} 0 ${exOuter} ${eyOuter}`,
+    `L ${exInner} ${eyInner}`,
+    `A ${innerR} ${innerR} 0 ${large} 1 ${sxInner} ${syInner}`,
+    `Z`,
+  ].join(' ');
+};
 
 const RadialMenu: React.FC = () => {
   const { classes } = useStyles();
   const { locale } = useLocales();
   const newDimension = 350 * 1.1025;
+
   const [visible, setVisible] = useState(false);
+  const [centerHover, setCenterHover] = useState(false); // for X hover color
   const [menuItems, setMenuItems] = useState<RadialMenuItem[]>([]);
   const [menu, setMenu] = useState<{ items: RadialMenuItem[]; sub?: boolean; page: number }>({
     items: [],
@@ -104,11 +206,8 @@ const RadialMenu: React.FC = () => {
 
   const changePage = async (increment?: boolean) => {
     setVisible(false);
-
     const didTransition: boolean = await fetchNui('radialTransition');
-
     if (!didTransition) return;
-
     setVisible(true);
     setMenu({ ...menu, page: increment ? menu.page + 1 : menu.page - 1 });
   };
@@ -158,40 +257,43 @@ const RadialMenu: React.FC = () => {
             viewBox="0 0 350 350"
             transform="rotate(90)"
           >
-            {/* Fixed issues with background circle extending the circle when there's less than 3 items */}
-            <g transform="translate(175, 175)">
-              <circle r={175} className={classes.backgroundCircle} />
-            </g>
+
+            {/* NOTE: no background circle at all (kept fully transparent by removing it) */}
+
             {menuItems.map((item, index) => {
-              const pieAngle = 360 / (menuItems.length < 3 ? 3 : menuItems.length);
+              const count = menuItems.length < 3 ? 3 : menuItems.length;
+              const pieAngle = 360 / count;
               const angle = degToRad(pieAngle / 2 + 90);
-              const gap = 1;
-              const radius = 175 * 0.65 - gap;
-              const sinAngle = Math.sin(angle);
-              const cosAngle = Math.cos(angle);
+
+              // Wider ring geometry (thicker blades)
+              const OUTER = 170;
+              const INNER = 80;
+              const RADIAL_GAP = 6;
+              const midRadius = (INNER + OUTER) / 2;
+
               const iconYOffset = splitTextIntoLines(item.label, 15).length > 3 ? 3 : 0;
-              const iconX = 175 + sinAngle * radius;
-              const iconY = 175 + cosAngle * radius + iconYOffset; // Apply the Y offset to iconY
+              const iconX = 175 + Math.sin(angle) * midRadius;
+              const iconY = 175 + Math.cos(angle) * midRadius + iconYOffset;
+
               const iconWidth = Math.min(Math.max(item.iconWidth || 50, 0), 100);
               const iconHeight = Math.min(Math.max(item.iconHeight || 50, 0), 100);
 
               return (
                 <g
-                  transform={`rotate(-${index * pieAngle} 175 175) translate(${sinAngle * gap}, ${cosAngle * gap})`}
+                  key={index}
+                  transform={`rotate(-${index * pieAngle} 175 175)`}
                   className={classes.sector}
                   onClick={async () => {
                     const clickIndex = menu.page === 1 ? index : PAGE_ITEMS * (menu.page - 1) - (menu.page - 1) + index;
                     if (!item.isMore) fetchNui('radialClick', clickIndex);
-                    else {
-                      await changePage(true);
-                    }
+                    else await changePage(true);
                   }}
                 >
-                  <path
-                    d={`M175.01,175.01 l${175 - gap},0 A175.01,175.01 0 0,0 ${
-                      175 + (175 - gap) * Math.cos(-degToRad(pieAngle))
-                    }, ${175 + (175 - gap) * Math.sin(-degToRad(pieAngle))} z`}
-                  />
+                  {/* DARK base + subtle striped overlay */}
+                  <path className={`${classes.sectorBase} sectorBase`} d={donutSectorPath(175, 175, INNER + RADIAL_GAP, OUTER - RADIAL_GAP, pieAngle)} />
+                  <path className={classes.sectorOverlay} d={donutSectorPath(175, 175, INNER + RADIAL_GAP, OUTER - RADIAL_GAP, pieAngle)} />
+
+                  {/* Icon + text */}
                   <g transform={`rotate(${index * pieAngle - 90} ${iconX} ${iconY})`} pointerEvents="none">
                     {typeof item.icon === 'string' && isIconUrl(item.icon) ? (
                       <image
@@ -220,8 +322,8 @@ const RadialMenu: React.FC = () => {
                       pointerEvents="none"
                       lengthAdjust="spacingAndGlyphs"
                     >
-                      {splitTextIntoLines(item.label, 15).map((line, index) => (
-                        <tspan x={iconX} dy={index === 0 ? 0 : '1.2em'} key={index}>
+                      {splitTextIntoLines(item.label, 15).map((line, i) => (
+                        <tspan x={iconX} dy={i === 0 ? 0 : '1.2em'} key={i}>
                           {line}
                         </tspan>
                       ))}
@@ -230,8 +332,12 @@ const RadialMenu: React.FC = () => {
                 </g>
               );
             })}
+
+            {/* Center hub */}
             <g
               transform={`translate(175, 175)`}
+              onMouseEnter={() => setCenterHover(true)}
+              onMouseLeave={() => setCenterHover(false)}
               onClick={async () => {
                 if (menu.page > 1) await changePage();
                 else {
@@ -246,12 +352,23 @@ const RadialMenu: React.FC = () => {
               <circle r={28} className={classes.centerCircle} />
             </g>
           </svg>
+
           <div className={classes.centerIconContainer}>
             <LibIcon
               icon={!menu.sub && menu.page < 2 ? 'xmark' : 'arrow-rotate-left'}
               fixedWidth
               className={classes.centerIcon}
-              color="#fff"
+              color={
+                (!menu.sub && menu.page < 2 && centerHover)
+                  ? '#2a2a2a'   // X turns dark on hover
+                  : '#FFFC68'   // default brand yellow
+              }
+              style={{
+                filter:
+                  (!menu.sub && menu.page < 2 && centerHover)
+                    ? 'none'
+                    : 'drop-shadow(0 0 8px rgba(255,252,104,.9))',
+              }}
               size="2x"
             />
           </div>

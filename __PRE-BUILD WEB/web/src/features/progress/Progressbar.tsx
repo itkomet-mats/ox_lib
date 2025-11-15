@@ -5,51 +5,70 @@ import { fetchNui } from '../../utils/fetchNui';
 import ScaleFade from '../../transitions/ScaleFade';
 import type { ProgressbarProps } from '../../typings';
 
-const useStyles = createStyles((theme) => ({
-  container: {
-    width: 350,
-    height: 45,
-    background: 'rgba(255, 255, 255, 0.205)',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    borderRadius: '8px',
-    backgroundImage: 'url(/src/blur.png)',
-    backgroundRepeat: 'repeat',
-    backgroundSize: 'auto',
-    backgroundPosition: 'center',
-    backgroundBlendMode: 'overlay',
-    overflow: 'hidden',
-  },
+const useStyles = createStyles(() => ({
   wrapper: {
-    width: '100%',
-    height: '20%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    bottom: 0,
-    position: 'absolute',
+    position: 'fixed',
+    left: 0,
+    right: 0,
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    bottom: '5%',
+    width: '19%',
+    zIndex: 5,
+    fontFamily: '"Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif',
+    fontSize: '1.7vh',
+    pointerEvents: 'none',
   },
-  bar: {
-    height: '100%',
-    backgroundColor: 'rgba(225, 255, 141, 0.58)',
-    // border: '1px solid rgba(206, 255, 72, 0.75) '
-  },
-  labelWrapper: {
-    position: 'absolute',
+  container: {
+    color: '#fff',
     display: 'flex',
-    width: 350,
-    height: 45,
+    flexDirection: 'column',
+    gap: '0.6vh',
+    userSelect: 'none',
+  },
+  labelsRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    justifyContent: 'center',
   },
   label: {
-    maxWidth: 350,
-    padding: 8,
-    textOverflow: 'ellipsis',
+    fontSize: '1.7vh',
+    lineHeight: '4vh',
+    color: '#5df542',
+    fontWeight: 700,
+    textShadow: '0 1px 2px rgba(0,0,0,.85), 0 0 8px rgba(0,0,0,.45)',
+  },
+  pct: {
+    fontSize: '1.7vh',
+    lineHeight: '4vh',
+    color: '#5df542',
+    fontWeight: 700,
+    // neon + dark outline for contrast
+    textShadow:
+      '0 0 12px rgba(0, 0, 0, 0.56), 0 0 4px rgba(0, 0, 0, 0.64), 0 1px 2px rgba(0, 0, 0, 0.72)',
+  },
+  progressBarContainer: {
+     background: `
+  #072e00ff
+`,
+    backgroundBlendMode: 'overlay',
+    height: '0.9vh',
+    position: 'relative',
+    display: 'block',
+    borderRadius: 4,
     overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    fontSize: 20,
-    color: '#ffffff',
-    
+  },
+  progressBar: {
+    backgroundColor: '#5df542',
+    width: '0%',
+    height: '0.9vh',
+    borderRadius: 4,
+    transition: 'width 0.3s',
+    transitionTimingFunction: 'ease-out',
+    // stronger green glow to match the % text
+     boxShadow:
+      '0 0 22px rgba(11, 239, 11, 0.95), 0 0 12px rgba(30, 239, 11, 0.85), 0 0 30px rgba(109, 255, 73, 0.85)',
+    filter: 'drop-shadow(0 0 10px rgba(143, 255, 91, 0.82))',
   },
 }));
 
@@ -57,37 +76,77 @@ const Progressbar: React.FC = () => {
   const { classes } = useStyles();
   const [visible, setVisible] = React.useState(false);
   const [label, setLabel] = React.useState('');
-  const [duration, setDuration] = React.useState(0);
+  const [percent, setPercent] = React.useState(0);
+  const [wasCancelled, setWasCancelled] = React.useState(false);
 
-  useNuiEvent('progressCancel', () => setVisible(false));
+  const rafRef = React.useRef<number | null>(null);
+  const startRef = React.useRef<number>(0);
+  const durationRef = React.useRef<number>(0);
 
-  useNuiEvent<ProgressbarProps>('progress', (data) => {
-    setVisible(true);
-    setLabel(data.label);
-    setDuration(data.duration);
+  const stopAnim = React.useCallback(() => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+  }, []);
+
+  const finish = React.useCallback(() => {
+    stopAnim();
+    setVisible(false);
+  }, [stopAnim]);
+
+  useNuiEvent('progressCancel', () => {
+    setWasCancelled(true);
+    stopAnim();
+    setPercent(0);
+    setVisible(false); // do NOT call progressComplete on cancel
   });
 
+  useNuiEvent<ProgressbarProps>('progress', (data) => {
+    setWasCancelled(false);
+    setLabel(data.label || '');
+    durationRef.current = data.duration || 0;
+    setPercent(0);
+    setVisible(true);
+
+    stopAnim();
+    startRef.current = performance.now();
+
+    const tick = (now: number) => {
+      const elapsed = now - startRef.current;
+      const total = Math.max(0, durationRef.current);
+      const p = total > 0 ? Math.min(1, elapsed / total) : 1;
+      setPercent(Math.round(p * 100));
+      if (p < 1) {
+        rafRef.current = requestAnimationFrame(tick);
+      } else {
+        finish();
+      }
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+  });
+
+  const handleExitComplete = React.useCallback(() => {
+    if (!wasCancelled) fetchNui('progressComplete');
+  }, [wasCancelled]);
+
+  React.useEffect(() => () => stopAnim(), [stopAnim]);
+
   return (
-    <>
-      <Box className={classes.wrapper}>
-        <ScaleFade visible={visible} onExitComplete={() => fetchNui('progressComplete')}>
-          <Box className={classes.container}>
-            <Box
-              className={classes.bar}
-              onAnimationEnd={() => setVisible(false)}
-              sx={{
-                animation: 'progress-bar linear',
-                animationDuration: `${duration}ms`,
-              }}
-            >
-              <Box className={classes.labelWrapper}>
-                <Text className={classes.label}>{label}</Text>
-              </Box>
-            </Box>
+    <Box className={classes.wrapper}>
+      <ScaleFade visible={visible} onExitComplete={handleExitComplete}>
+        <Box className={classes.container}>
+          <Box className={classes.labelsRow}>
+            <Text className={classes.label}>{label || 'Working...'}</Text>
+            <Text className={classes.pct}>{percent}%</Text>
           </Box>
-        </ScaleFade>
-      </Box>
-    </>
+          <Box className={classes.progressBarContainer}>
+            <Box className={classes.progressBar} sx={{ width: `${percent}%` }} />
+          </Box>
+        </Box>
+      </ScaleFade>
+    </Box>
   );
 };
 

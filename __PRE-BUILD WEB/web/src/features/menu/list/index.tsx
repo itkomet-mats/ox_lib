@@ -10,13 +10,16 @@ import LibIcon from '../../../components/LibIcon';
 
 const useStyles = createStyles((theme, params: { position?: MenuPosition; itemCount: number; selected: number }) => ({
   tooltip: {
-    background: 'rgba(0, 0, 0, 0.3)',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    color: 'white',
-    borderRadius: '8px',
+    background: '#072e00ff', // semi-transparent info tone
+    border: '1px solid #5df542',
+    borderRadius: 8,
+    color: '#5df542',
     maxWidth: 350,
     whiteSpace: 'normal',
+    boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+    padding: 8,
   },
+
   container: {
     position: 'absolute',
     pointerEvents: 'none',
@@ -29,35 +32,39 @@ const useStyles = createStyles((theme, params: { position?: MenuPosition; itemCo
     bottom: params.position === 'bottom-left' || params.position === 'bottom-right' ? 1 : undefined,
     fontFamily: 'Roboto',
     width: 384,
-    
   },
+
   buttonsWrapper: {
     height: 'fit-content',
     maxHeight: 415,
     overflow: 'hidden',
-    background: 'rgba(0, 0, 0, 0.2)',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    borderRadius: '8px',
+    // background: '#00000000',
+    // border: '1px solid rgba(255, 255, 255, 0.5)',
+    borderRadius: 8,
     color: 'white',
+    // boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
   },
+
   scrollArrow: {
-    background: 'rgba(255, 255, 255, 0.205)',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    borderRadius: '8px',
-    backgroundImage: 'url(/src/blur.png)',
-    backgroundRepeat: 'repeat',
-    backgroundSize: 'auto',
-    backgroundPosition: 'center',
-    backgroundBlendMode: 'overlay',
+    background: '#072e00ff',
+    border: '1px solid #5df542',
+    borderRadius: 8,
     textAlign: 'center',
     marginTop: 10,
     height: 25,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 5px 15px rgba(0,0,0,0.25)',
+    marginBottom: 10,
   },
+
   scrollArrowIcon: {
-    color: 'white',
+    color: '#5df542',
     fontSize: 20,
   },
 }));
+
 
 const ListMenu: React.FC = () => {
   const [menu, setMenu] = useState<MenuSettings>({

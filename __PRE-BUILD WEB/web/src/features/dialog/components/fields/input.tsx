@@ -12,7 +12,7 @@ interface Props {
 
 const useStyles = createStyles((theme) => ({
   eyeIcon: {
-    color: '#ffffff',
+    color: '#2a2a2a',
   },
 }));
 
@@ -31,16 +31,11 @@ const InputField: React.FC<Props> = (props) => {
           placeholder={props.row.placeholder}
           styles={{
   input: {
-    background: 'rgba(255, 255, 255, 0.3)',
-    backgroundImage: 'url(/src/blur-light.png)',
-    backgroundRepeat: 'repeat',
-    backgroundSize: 'auto',
-    backgroundPosition: 'center',
-    backgroundBlendMode: 'overlay',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    color: '#2a2a2a',
+        background: '#5df54250',
+    border: '1px solid #5df542',
+    color: '#ffffff',
     '::placeholder': {
-      color: '#2a2a2a90',
+      color: '#ffffff80',
     },
   },
   label: {
@@ -66,12 +61,9 @@ const InputField: React.FC<Props> = (props) => {
           placeholder={props.row.placeholder}
           styles={{
             input: {
-            background: 'rgba(255, 255, 255, 0.3)',
-            backgroundImage: 'url(/src/blur.png)',
-            backgroundRepeat: 'repeat',
-            backgroundSize: 'auto',
-            backgroundPosition: 'center',
-            backgroundBlendMode: 'overlay',
+            background: '#5df54250',
+            border: '1px solid #5df542',
+
             color: '#ffffff',
                 '::placeholder': {
                   color: '#ffffff',

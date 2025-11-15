@@ -26,13 +26,16 @@ const useStyles = createStyles((theme, params: { difficultyOffset: number }) => 
     height: 500,
   },
   track: {
-    fill: 'transparent',
-    stroke: 'rgba(255, 255, 255, 0.15)',
-    strokeWidth: 8,
+   
+     fill: 'transparent',
+  stroke: '#072e00ff',
+  strokeWidth: 8,
+  strokeDasharray: '3 2', // pattern: 3px filled, 2px gap
+    
     r: 50,
     cx: 250,
     cy: 250,
-    strokeDasharray: circleCircumference,
+   
     '@media (min-height: 1440px)': {
       strokeWidth: 10,
       r: 65,
@@ -41,7 +44,7 @@ const useStyles = createStyles((theme, params: { difficultyOffset: number }) => 
   },
   skillArea: {
     fill: 'transparent',
-    stroke: 'rgb(224, 255, 141)',
+    stroke: '#5df542',
     strokeWidth: 8,
     r: 50,
     cx: 250,
@@ -56,7 +59,7 @@ const useStyles = createStyles((theme, params: { difficultyOffset: number }) => 
     },
   },
   indicator: {
-    stroke: 'rgb(224, 255, 141)',
+    stroke: '#5df542',
     strokeWidth: 16,
     fill: 'transparent',
     r: 50,
@@ -76,7 +79,7 @@ const useStyles = createStyles((theme, params: { difficultyOffset: number }) => 
     left: '50%',
     top: '50%',
     transform: 'translate(-50%, -50%)',
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: '#072e00ff',
     width: 25,
     color: 'white',
     height: 25,

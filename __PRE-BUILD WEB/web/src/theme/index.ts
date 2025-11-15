@@ -8,10 +8,10 @@ export const theme: MantineThemeOverride = {
     Button: {
       styles: {
         root: {
-          border: '1px solid rgba(225, 255, 141, 0.61)',
-          background: 'rgba(225, 255, 141, 0.16)',
+          border: '1px solid #5df542',
+          background: '#072e00ff',
           // boxShadow: '0 10px 50px rgba(0, 0, 0, 0.3)',
-          color: 'rgb(224, 255, 141)',
+          color: '#5df542',
 
         },
       },

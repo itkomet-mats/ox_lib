@@ -26,18 +26,13 @@ const TextareaField: React.FC<Props> = (props) => {
       maxRows={props.row.max}
       styles={{
       input: {
-         background: 'rgba(255, 255, 255, 0.3)',
-      border: '1px solid rgba(255, 255, 255, 0.3)',
-      backgroundImage: 'url(/src/blur.png)',
-      backgroundRepeat: 'repeat',
-      backgroundSize: 'auto',
-      backgroundPosition: 'center',
-      backgroundBlendMode: 'overlay',
+             background: '#5df54250',
+    border: '1px solid #5df542',
         borderRadius: '8px',
         color: 'white',
         fontWeight: 500,
         '::placeholder': {
-          color: 'rgba(255, 255, 255, 0.5)',
+          color: '#ffffff',
         },
       },
       label: {
@@ -46,7 +41,7 @@ const TextareaField: React.FC<Props> = (props) => {
         marginBottom: 5,
       },
       description: {
-        color: 'rgba(255, 255, 255, 0.6)',
+        color: '#ffffff',
         fontSize: 13,
         marginBottom: 8,
       },
